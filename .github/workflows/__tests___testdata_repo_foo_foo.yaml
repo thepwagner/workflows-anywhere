@@ -1,0 +1,10 @@
+name: foo
+on:
+  push:
+    paths:
+      - __tests__/testdata/repo/foo/**
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo 'Hello foo'
