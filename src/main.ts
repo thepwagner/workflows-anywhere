@@ -16,7 +16,7 @@ async function run(): Promise<void> {
       }
       core.info(`Mapping workflow ${path}...`)
 
-      await fs.writeFile(`.github/workflows/${wf.mappedPath}`, `TODO:`)
+      await fs.writeFile(`.github/workflows/${wf.mappedPath}`, wf.mappedContent)
     }
 
     // Find mapped workflows that no longer exist:

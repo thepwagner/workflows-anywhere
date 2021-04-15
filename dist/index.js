@@ -51,7 +51,7 @@ function run() {
                     continue;
                 }
                 core.info(`Mapping workflow ${path}...`);
-                yield fs_1.promises.writeFile(`.github/workflows/${wf.mappedPath}`, `TODO:`);
+                yield fs_1.promises.writeFile(`.github/workflows/${wf.mappedPath}`, wf.mappedContent);
             }
             // Find mapped workflows that no longer exist:
             // Delete each:
@@ -106,6 +106,7 @@ Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.loadWorkflow = exports.Workflow = exports.listWorkflows = void 0;
 const globby_1 = __importDefault(__nccwpck_require__(3398));
 const yaml = __importStar(__nccwpck_require__(1917));
+const path = __importStar(__nccwpck_require__(5622));
 const fs_1 = __nccwpck_require__(5747);
 function listWorkflows(root) {
     return __awaiter(this, void 0, void 0, function* () {
@@ -118,17 +119,17 @@ function listWorkflows(root) {
         for (const pattern of patterns) {
             const paths = yield globby_1.default(pattern, { gitignore: true });
             workflows = workflows.concat(paths
-                .map(path => path.toString())
-                .filter(path => !path.startsWith(`${root}/.github/workflows`))
-                .filter(path => !path.startsWith(`.github/workflows`)));
+                .map(p => p.toString())
+                .filter(p => !p.startsWith(`${root}/.github/workflows`))
+                .filter(p => !p.startsWith(`.github/workflows`)));
         }
         return workflows;
     });
 }
 exports.listWorkflows = listWorkflows;
 class Workflow {
-    constructor(path, body) {
-        this.path = path;
+    constructor(fn, body) {
+        this.fn = fn;
         this.parsed = yaml.load(body) || {};
     }
     /** Return any triggers that can be filtered by path */
@@ -147,15 +148,36 @@ class Workflow {
     }
     /** Returns filename for usage in /.github/workflows/ */
     get mappedPath() {
-        const split = this.path.split('/.github/workflows/');
+        const split = this.fn.split('/.github/workflows/');
         return `${split[0].replace(/\//g, '_')}_${split[1]}`;
+    }
+    get mappedContent() {
+        const { on } = this.parsed;
+        if (isPathEvent(on)) {
+            return this.replaceTriggers([on]);
+        }
+        if (on instanceof Array) {
+            return this.replaceTriggers(on.filter(isPathEvent));
+        }
+        return '';
+    }
+    replaceTriggers(triggers) {
+        const clone = Object.assign({}, this.parsed);
+        clone['on'] = triggers.reduce((on, trigger) => {
+            on[trigger] = { paths: [this.relPath()] };
+            return on;
+        }, {});
+        return yaml.dump(clone, { noCompatMode: true });
+    }
+    relPath() {
+        return path.join(this.fn.replace(/.github\/workflows\/.*/, ''), '**');
     }
 }
 exports.Workflow = Workflow;
-function loadWorkflow(path) {
+function loadWorkflow(fn) {
     return __awaiter(this, void 0, void 0, function* () {
-        const data = yield fs_1.promises.readFile(path, { encoding: 'utf8' });
-        return new Workflow(path, data);
+        const data = yield fs_1.promises.readFile(fn, { encoding: 'utf8' });
+        return new Workflow(fn, data);
     });
 }
 exports.loadWorkflow = loadWorkflow;

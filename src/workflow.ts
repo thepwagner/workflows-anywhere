@@ -1,5 +1,6 @@
 import globby from 'globby'
 import * as yaml from 'js-yaml'
+import * as path from 'path'
 import {promises as fs} from 'fs'
 
 export async function listWorkflows(root: string): Promise<string[]> {
@@ -14,9 +15,9 @@ export async function listWorkflows(root: string): Promise<string[]> {
     const paths = await globby(pattern, {gitignore: true})
     workflows = workflows.concat(
       paths
-        .map(path => path.toString())
-        .filter(path => !path.startsWith(`${root}/.github/workflows`))
-        .filter(path => !path.startsWith(`.github/workflows`))
+        .map(p => p.toString())
+        .filter(p => !p.startsWith(`${root}/.github/workflows`))
+        .filter(p => !p.startsWith(`.github/workflows`))
     )
   }
   return workflows
@@ -25,7 +26,7 @@ export async function listWorkflows(root: string): Promise<string[]> {
 export class Workflow {
   private readonly parsed: any
 
-  constructor(private readonly path: string, body: string) {
+  constructor(private readonly fn: string, body: string) {
     this.parsed = yaml.load(body) || {}
   }
 
@@ -47,14 +48,41 @@ export class Workflow {
 
   /** Returns filename for usage in /.github/workflows/ */
   get mappedPath(): string {
-    const split = this.path.split('/.github/workflows/')
+    const split = this.fn.split('/.github/workflows/')
     return `${split[0].replace(/\//g, '_')}_${split[1]}`
+  }
+
+  get mappedContent(): string {
+    const {on} = this.parsed
+
+    if (isPathEvent(on)) {
+      return this.replaceTriggers([on])
+    }
+    if (on instanceof Array) {
+      return this.replaceTriggers(on.filter(isPathEvent))
+    }
+
+    return ''
+  }
+
+  private replaceTriggers(triggers: string[]): string {
+    const clone = Object.assign({}, this.parsed)
+    clone['on'] = triggers.reduce((on: any, trigger) => {
+      on[trigger] = {paths: [this.relPath()]}
+      return on
+    }, {})
+
+    return yaml.dump(clone, {noCompatMode: true})
+  }
+
+  private relPath(): string {
+    return path.join(this.fn.replace(/.github\/workflows\/.*/, ''), '**')
   }
 }
 
-export async function loadWorkflow(path: string): Promise<Workflow> {
-  const data = await fs.readFile(path, {encoding: 'utf8'})
-  return new Workflow(path, data)
+export async function loadWorkflow(fn: string): Promise<Workflow> {
+  const data = await fs.readFile(fn, {encoding: 'utf8'})
+  return new Workflow(fn, data)
 }
 
 function isPathEvent(event: string): boolean {

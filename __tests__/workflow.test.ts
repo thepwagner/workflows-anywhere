@@ -47,4 +47,36 @@ describe('Workflow', () => {
       expect(wf.mappedPath).toEqual('test_test.yaml')
     })
   })
+
+  describe('#mappedContent', () => {
+    it('maps single string trigger', () => {
+      const wf = new Workflow(testWorkflowPath, 'on: push\nsteps: foo')
+      expect(wf.mappedContent.trim()).toEqual(
+        `
+on:
+  push:
+    paths:
+      - test/**
+steps: foo`.trim()
+      )
+    })
+  })
+
+  it('maps array trigger', () => {
+    const wf = new Workflow(
+      testWorkflowPath,
+      'on: [push,pull_request]\nsteps: foo'
+    )
+    expect(wf.mappedContent.trim()).toEqual(
+      `
+on:
+  push:
+    paths:
+      - test/**
+  pull_request:
+    paths:
+      - test/**
+steps: foo`.trim()
+    )
+  })
 })
