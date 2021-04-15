@@ -44,6 +44,12 @@ export class Workflow {
 
     return []
   }
+
+  /** Returns filename for usage in /.github/workflows/ */
+  get mappedPath(): string {
+    const split = this.path.split('/.github/workflows/')
+    return `${split[0].replace(/\//g, '_')}_${split[1]}`
+  }
 }
 
 export async function loadWorkflow(path: string): Promise<Workflow> {

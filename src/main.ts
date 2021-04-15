@@ -1,5 +1,6 @@
 import * as core from '@actions/core'
 import {listWorkflows, loadWorkflow} from './workflow'
+import {promises as fs} from 'fs'
 
 async function run(): Promise<void> {
   try {
@@ -14,6 +15,8 @@ async function run(): Promise<void> {
         continue
       }
       core.info(`Mapping workflow ${path}...`)
+
+      await fs.writeFile(`.github/workflows/${wf.mappedPath}`, `TODO:`)
     }
 
     // Find mapped workflows that no longer exist:

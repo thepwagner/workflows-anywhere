@@ -40,4 +40,11 @@ describe("Workflow", () => {
       expectPathTriggers(`on:\n  issue_comment:\n`, [])
     })
   })
+
+  describe("#mappedPath", () => {
+    it("should return mapped path", () => {
+      const wf = new Workflow(testWorkflowPath, "on: push")
+      expect(wf.mappedPath).toEqual("test_test.yaml")
+    })
+  })
 })
