@@ -8,7 +8,8 @@ Do you wish you could scatter `.github/workflows/` files around your monorepo?
 
 This Action lets you, by crawling the repository and porting any discovered workflows to the root `/.github/workflows` directory where GitHub will find them.
 
-[Example repository](https://github.com/thepwagner/workflows-anywhere-example)
+[Example repository](https://github.com/thepwagner/workflows-anywhere-example) - 
+[bar/.github/workflows/bar.yaml](https://github.com/thepwagner/workflows-anywhere-example/blob/main/bar/.github/workflows/bar.yml) becomes [.github/workflows/bar_bar.yaml](https://github.com/thepwagner/workflows-anywhere-example/blob/main/.github/workflows/bar_bar.yml)
 
 ## Sample
 
