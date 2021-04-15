@@ -20,7 +20,6 @@ async function run(): Promise<void> {
     }
 
     // TODO: Find mapped workflows that no longer exist, delete each
-
   } catch (error) {
     core.setFailed(error.message)
   }

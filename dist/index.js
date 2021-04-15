@@ -53,8 +53,7 @@ function run() {
                 core.info(`Mapping workflow ${path}...`);
                 yield fs_1.promises.writeFile(`.github/workflows/${wf.mappedPath}`, wf.mappedContent);
             }
-            // Find mapped workflows that no longer exist:
-            // Delete each:
+            // TODO: Find mapped workflows that no longer exist, delete each
         }
         catch (error) {
             core.setFailed(error.message);
