@@ -1,5 +1,6 @@
 import globby from 'globby'
 import * as yaml from 'js-yaml'
+import {promises as fs} from 'fs'
 
 export async function listWorkflows(root: string): Promise<string[]> {
   let workflows: string[] = []
@@ -25,12 +26,31 @@ export class Workflow {
   private readonly parsed: any
 
   constructor(private readonly path: string, body: string) {
-    this.parsed = yaml.load(body)
+    this.parsed = yaml.load(body) || {}
   }
 
   /** Return any triggers that can be filtered by path */
   get pathTriggers(): string[] {
     const {on} = this.parsed
-    return on
+    if (isPathEvent(on)) {
+      return [on]
+    }
+    if (on instanceof Array) {
+      return on.filter(isPathEvent)
+    }
+    if (on instanceof Object) {
+      return Object.keys(on).filter(isPathEvent)
+    }
+
+    return []
   }
+}
+
+export async function loadWorkflow(path: string): Promise<Workflow> {
+  const data = await fs.readFile(path, {encoding: 'utf8'})
+  return new Workflow(path, data)
+}
+
+function isPathEvent(event: string): boolean {
+  return event === 'push' || event === 'pull_request'
 }

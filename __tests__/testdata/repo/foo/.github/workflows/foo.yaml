@@ -1,0 +1,3 @@
+on: push
+steps:
+  - run: "echo 'Hello foo'"

@@ -15,9 +15,29 @@ describe("listWorkflows", () => {
 
 describe("Workflow", () => {
   describe("#pathTriggers", () => {
-    it("should parse simple workflow", () => {
-      const wf = new Workflow("testWorkflowPath", `on: [push]`)
-      expect(wf.pathTriggers).toEqual(["push"])
+    function expectPathTriggers(workflow: string, triggers: string[]) {
+      const wf = new Workflow(testWorkflowPath, workflow)
+      expect(wf.pathTriggers).toEqual(triggers)
+    }
+    it("should parse string triggers", () => {
+      expectPathTriggers(`on: push`, ["push"])
+      expectPathTriggers(`on: pull_request`, ["pull_request"])
+      expectPathTriggers(`on: issue_comment`, [])
+    })
+
+    it("should parse array triggers", () => {
+      expectPathTriggers(`on: [push]`, ["push"])
+      expectPathTriggers(`on: ["push"]`, ["push"])
+      expectPathTriggers(`on: ['push']`, ["push"])
+      expectPathTriggers(`on: [pull_request]`, ["pull_request"])
+      expectPathTriggers(`on: [push, pull_request]`, ["push", "pull_request"])
+      expectPathTriggers(`on: [push, issue_comment]`, ["push"])
+    })
+
+    it("should parse object triggers", () => {
+      expectPathTriggers(`on:\n  push:\n`, ["push"])
+      expectPathTriggers(`on:\n  push:\n    branches: main\n`, ["push"])
+      expectPathTriggers(`on:\n  issue_comment:\n`, [])
     })
   })
 })
