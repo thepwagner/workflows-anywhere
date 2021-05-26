@@ -8,6 +8,6 @@ updates:
     schedule:
       interval: 'daily'
     ignore:
-      - package-name: "jest"
+      - dependency-name: "jest"
         update-types: ["version-update:semver-major"]
 
