@@ -192,14 +192,27 @@ function isPathEvent(event) {
 
 "use strict";
 
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    Object.defineProperty(o, k2, { enumerable: true, get: function() { return m[k]; } });
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
 var __importStar = (this && this.__importStar) || function (mod) {
     if (mod && mod.__esModule) return mod;
     var result = {};
-    if (mod != null) for (var k in mod) if (Object.hasOwnProperty.call(mod, k)) result[k] = mod[k];
-    result["default"] = mod;
+    if (mod != null) for (var k in mod) if (k !== "default" && Object.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    __setModuleDefault(result, mod);
     return result;
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.issue = exports.issueCommand = void 0;
 const os = __importStar(__nccwpck_require__(2087));
 const utils_1 = __nccwpck_require__(5278);
 /**
@@ -278,6 +291,25 @@ function escapeProperty(s) {
 
 "use strict";
 
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    Object.defineProperty(o, k2, { enumerable: true, get: function() { return m[k]; } });
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (k !== "default" && Object.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    __setModuleDefault(result, mod);
+    return result;
+};
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
@@ -287,14 +319,8 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
-var __importStar = (this && this.__importStar) || function (mod) {
-    if (mod && mod.__esModule) return mod;
-    var result = {};
-    if (mod != null) for (var k in mod) if (Object.hasOwnProperty.call(mod, k)) result[k] = mod[k];
-    result["default"] = mod;
-    return result;
-};
 Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.getState = exports.saveState = exports.group = exports.endGroup = exports.startGroup = exports.info = exports.warning = exports.error = exports.debug = exports.isDebug = exports.setFailed = exports.setCommandEcho = exports.setOutput = exports.getBooleanInput = exports.getInput = exports.addPath = exports.setSecret = exports.exportVariable = exports.ExitCode = void 0;
 const command_1 = __nccwpck_require__(7351);
 const file_command_1 = __nccwpck_require__(717);
 const utils_1 = __nccwpck_require__(5278);
@@ -361,7 +387,9 @@ function addPath(inputPath) {
 }
 exports.addPath = addPath;
 /**
- * Gets the value of an input.  The value is also trimmed.
+ * Gets the value of an input.
+ * Unless trimWhitespace is set to false in InputOptions, the value is also trimmed.
+ * Returns an empty string if the value is not defined.
  *
  * @param     name     name of the input to get
  * @param     options  optional. See InputOptions.
@@ -372,9 +400,34 @@ function getInput(name, options) {
     if (options && options.required && !val) {
         throw new Error(`Input required and not supplied: ${name}`);
     }
+    if (options && options.trimWhitespace === false) {
+        return val;
+    }
     return val.trim();
 }
 exports.getInput = getInput;
+/**
+ * Gets the input value of the boolean type in the YAML 1.2 "core schema" specification.
+ * Support boolean input list: `true | True | TRUE | false | False | FALSE` .
+ * The return value is also in boolean type.
+ * ref: https://yaml.org/spec/1.2/spec.html#id2804923
+ *
+ * @param     name     name of the input to get
+ * @param     options  optional. See InputOptions.
+ * @returns   boolean
+ */
+function getBooleanInput(name, options) {
+    const trueValue = ['true', 'True', 'TRUE'];
+    const falseValue = ['false', 'False', 'FALSE'];
+    const val = getInput(name, options);
+    if (trueValue.includes(val))
+        return true;
+    if (falseValue.includes(val))
+        return false;
+    throw new TypeError(`Input does not meet YAML 1.2 "Core Schema" specification: ${name}\n` +
+        `Support boolean input list: \`true | True | TRUE | false | False | FALSE\``);
+}
+exports.getBooleanInput = getBooleanInput;
 /**
  * Sets the value of an output.
  *
@@ -383,6 +436,7 @@ exports.getInput = getInput;
  */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 function setOutput(name, value) {
+    process.stdout.write(os.EOL);
     command_1.issueCommand('set-output', { name }, value);
 }
 exports.setOutput = setOutput;
@@ -524,14 +578,27 @@ exports.getState = getState;
 "use strict";
 
 // For internal use, subject to change.
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    Object.defineProperty(o, k2, { enumerable: true, get: function() { return m[k]; } });
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
 var __importStar = (this && this.__importStar) || function (mod) {
     if (mod && mod.__esModule) return mod;
     var result = {};
-    if (mod != null) for (var k in mod) if (Object.hasOwnProperty.call(mod, k)) result[k] = mod[k];
-    result["default"] = mod;
+    if (mod != null) for (var k in mod) if (k !== "default" && Object.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    __setModuleDefault(result, mod);
     return result;
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.issueCommand = void 0;
 // We use any as a valid input type
 /* eslint-disable @typescript-eslint/no-explicit-any */
 const fs = __importStar(__nccwpck_require__(5747));
@@ -562,6 +629,7 @@ exports.issueCommand = issueCommand;
 // We use any as a valid input type
 /* eslint-disable @typescript-eslint/no-explicit-any */
 Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.toCommandValue = void 0;
 /**
  * Sanitizes an input into a string so it can be passed into issueCommand safely
  * @param input input to sanitize into a string
@@ -10589,7 +10657,7 @@ const parse = (input, options) => {
     START_ANCHOR
   } = PLATFORM_CHARS;
 
-  const globstar = (opts) => {
+  const globstar = opts => {
     return `(${capture}(?:(?!${START_ANCHOR}${opts.dot ? DOTS_SLASH : DOT_LITERAL}).)*?)`;
   };
 
@@ -10639,12 +10707,13 @@ const parse = (input, options) => {
 
   const eos = () => state.index === len - 1;
   const peek = state.peek = (n = 1) => input[state.index + n];
-  const advance = state.advance = () => input[++state.index];
+  const advance = state.advance = () => input[++state.index] || '';
   const remaining = () => input.slice(state.index + 1);
   const consume = (value = '', num = 0) => {
     state.consumed += value;
     state.index += num;
   };
+
   const append = token => {
     state.output += token.output != null ? token.output : token.value;
     consume(token.value);
@@ -10700,7 +10769,7 @@ const parse = (input, options) => {
       }
     }
 
-    if (extglobs.length && tok.type !== 'paren' && !EXTGLOB_CHARS[tok.value]) {
+    if (extglobs.length && tok.type !== 'paren') {
       extglobs[extglobs.length - 1].inner += tok.value;
     }
 
@@ -10732,6 +10801,7 @@ const parse = (input, options) => {
 
   const extglobClose = token => {
     let output = token.close + (opts.capture ? ')' : '');
+    let rest;
 
     if (token.type === 'negate') {
       let extglobStar = star;
@@ -10744,7 +10814,11 @@ const parse = (input, options) => {
         output = token.close = `)$))${extglobStar}`;
       }
 
-      if (token.prev.type === 'bos' && eos()) {
+      if (token.inner.includes('*') && (rest = remaining()) && /^\.[^\\/.]+$/.test(rest)) {
+        output = token.close = `)${rest})${extglobStar})`;
+      }
+
+      if (token.prev.type === 'bos') {
         state.negatedExtglob = true;
       }
     }
@@ -10853,9 +10927,9 @@ const parse = (input, options) => {
       }
 
       if (opts.unescape === true) {
-        value = advance() || '';
+        value = advance();
       } else {
-        value += advance() || '';
+        value += advance();
       }
 
       if (state.brackets === 0) {
@@ -11519,7 +11593,7 @@ parse.fastpaths = (input, options) => {
     star = `(${star})`;
   }
 
-  const globstar = (opts) => {
+  const globstar = opts => {
     if (opts.noglobstar === true) return star;
     return `(${capture}(?:(?!${START_ANCHOR}${opts.dot ? DOTS_SLASH : DOT_LITERAL}).)*?)`;
   };
@@ -11814,6 +11888,40 @@ picomatch.parse = (pattern, options) => {
 picomatch.scan = (input, options) => scan(input, options);
 
 /**
+ * Compile a regular expression from the `state` object returned by the
+ * [parse()](#parse) method.
+ *
+ * @param {Object} `state`
+ * @param {Object} `options`
+ * @param {Boolean} `returnOutput` Intended for implementors, this argument allows you to return the raw output from the parser.
+ * @param {Boolean} `returnState` Adds the state to a `state` property on the returned regex. Useful for implementors and debugging.
+ * @return {RegExp}
+ * @api public
+ */
+
+picomatch.compileRe = (state, options, returnOutput = false, returnState = false) => {
+  if (returnOutput === true) {
+    return state.output;
+  }
+
+  const opts = options || {};
+  const prepend = opts.contains ? '' : '^';
+  const append = opts.contains ? '' : '$';
+
+  let source = `${prepend}(?:${state.output})${append}`;
+  if (state && state.negated === true) {
+    source = `^(?!${source}).*$`;
+  }
+
+  const regex = picomatch.toRegex(source, options);
+  if (returnState === true) {
+    regex.state = state;
+  }
+
+  return regex;
+};
+
+/**
  * Create a regular expression from a parsed glob pattern.
  *
  * ```js
@@ -11826,56 +11934,25 @@ picomatch.scan = (input, options) => scan(input, options);
  * ```
  * @param {String} `state` The object returned from the `.parse` method.
  * @param {Object} `options`
+ * @param {Boolean} `returnOutput` Implementors may use this argument to return the compiled output, instead of a regular expression. This is not exposed on the options to prevent end-users from mutating the result.
+ * @param {Boolean} `returnState` Implementors may use this argument to return the state from the parsed glob with the returned regular expression.
  * @return {RegExp} Returns a regex created from the given pattern.
  * @api public
  */
 
-picomatch.compileRe = (parsed, options, returnOutput = false, returnState = false) => {
-  if (returnOutput === true) {
-    return parsed.output;
-  }
-
-  const opts = options || {};
-  const prepend = opts.contains ? '' : '^';
-  const append = opts.contains ? '' : '$';
-
-  let source = `${prepend}(?:${parsed.output})${append}`;
-  if (parsed && parsed.negated === true) {
-    source = `^(?!${source}).*$`;
-  }
-
-  const regex = picomatch.toRegex(source, options);
-  if (returnState === true) {
-    regex.state = parsed;
-  }
-
-  return regex;
-};
-
-picomatch.makeRe = (input, options, returnOutput = false, returnState = false) => {
+picomatch.makeRe = (input, options = {}, returnOutput = false, returnState = false) => {
   if (!input || typeof input !== 'string') {
     throw new TypeError('Expected a non-empty string');
   }
 
-  const opts = options || {};
   let parsed = { negated: false, fastpaths: true };
-  let prefix = '';
-  let output;
 
-  if (input.startsWith('./')) {
-    input = input.slice(2);
-    prefix = parsed.prefix = './';
+  if (options.fastpaths !== false && (input[0] === '.' || input[0] === '*')) {
+    parsed.output = parse.fastpaths(input, options);
   }
 
-  if (opts.fastpaths !== false && (input[0] === '.' || input[0] === '*')) {
-    output = parse.fastpaths(input, options);
-  }
-
-  if (output === undefined) {
+  if (!parsed.output) {
     parsed = parse(input, options);
-    parsed.prefix = prefix + (parsed.prefix || '');
-  } else {
-    parsed.output = output;
   }
 
   return picomatch.compileRe(parsed, options, returnOutput, returnState);
@@ -11962,7 +12039,8 @@ const depth = token => {
 /**
  * Quickly scans a glob pattern and returns an object with a handful of
  * useful properties, like `isGlob`, `path` (the leading non-glob, if it exists),
- * `glob` (the actual pattern), and `negated` (true if the path starts with `!`).
+ * `glob` (the actual pattern), `negated` (true if the path starts with `!` but not
+ * with `!(`) and `negatedExtglob` (true if the path starts with `!(`).
  *
  * ```js
  * const pm = require('picomatch');
@@ -11996,6 +12074,7 @@ const scan = (input, options) => {
   let braceEscaped = false;
   let backslashes = false;
   let negated = false;
+  let negatedExtglob = false;
   let finished = false;
   let braces = 0;
   let prev;
@@ -12107,6 +12186,9 @@ const scan = (input, options) => {
         isGlob = token.isGlob = true;
         isExtglob = token.isExtglob = true;
         finished = true;
+        if (code === CHAR_EXCLAMATION_MARK && index === start) {
+          negatedExtglob = true;
+        }
 
         if (scanToEnd === true) {
           while (eos() !== true && (code = advance())) {
@@ -12161,13 +12243,15 @@ const scan = (input, options) => {
           isBracket = token.isBracket = true;
           isGlob = token.isGlob = true;
           finished = true;
-
-          if (scanToEnd === true) {
-            continue;
-          }
           break;
         }
       }
+
+      if (scanToEnd === true) {
+        continue;
+      }
+
+      break;
     }
 
     if (opts.nonegate !== true && code === CHAR_EXCLAMATION_MARK && index === start) {
@@ -12258,7 +12342,8 @@ const scan = (input, options) => {
     isGlob,
     isExtglob,
     isGlobstar,
-    negated
+    negated,
+    negatedExtglob
   };
 
   if (opts.tokens === true) {
